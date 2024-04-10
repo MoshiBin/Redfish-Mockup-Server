@@ -1,0 +1,30 @@
+name: Build and push
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  docker:
+    name: Build and push Docker latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{secrets.DOCKER_USERNAME}}
+        password: ${{secrets.DOCKER_PASSWORD}}
+    - name: Build Docker image and push
+      id: docker_build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: dmtf/redfish-mockup-server:latest
+        platforms: linux/arm64,linux/amd64
+    - name: Image digest
+      run: echo ${{steps.docker_build.outputs.digest}}
